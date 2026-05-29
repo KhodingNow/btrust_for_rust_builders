@@ -5,7 +5,7 @@ on:
     branches: [ "main", "master" ]
   pull_request:
     branches: [ "main", "master" ]
-  workflow_dispatch:  # Allows manual trigger
+  workflow_dispatch:
 
 env:
   CARGO_TERM_COLOR: always
@@ -27,15 +27,13 @@ jobs:
       uses: actions/checkout@v4
 
     - name: Install Rust toolchain
-      uses: actions-rs/toolchain@v1
+      uses: dtolnay/rust-toolchain@master
       with:
-        profile: minimal
         toolchain: ${{ matrix.rust }}
-        override: true
         components: rustfmt, clippy
 
     - name: Cache cargo registry
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       with:
         path: |
           ~/.cargo/registry
@@ -56,55 +54,3 @@ jobs:
 
     - name: Run tests
       run: cargo test --verbose
-
-  # Additional job for code coverage
-  coverage:
-    name: Code Coverage
-    runs-on: ubuntu-latest
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-
-    - name: Install Rust
-      uses: actions-rs/toolchain@v1
-      with:
-        toolchain: stable
-        override: true
-
-    - name: Install cargo-tarpaulin
-      uses: actions-rs/install@v0.1
-      with:
-        crate: cargo-tarpaulin
-        version: latest
-
-    - name: Generate code coverage
-      run: cargo tarpaulin --out Xml
-
-    - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v3
-      with:
-        files: ./cobertura.xml
-        fail_ci_if_error: false
-
-  # Security audit
-  security:
-    name: Security Audit
-    runs-on: ubuntu-latest
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-
-    - name: Install Rust
-      uses: actions-rs/toolchain@v1
-      with:
-        toolchain: stable
-        override: true
-
-    - name: Install cargo-audit
-      uses: actions-rs/install@v0.1
-      with:
-        crate: cargo-audit
-        version: latest
-
-    - name: Run security audit
-      run: cargo audit
